@@ -77,7 +77,7 @@ py_library(
     srcs = ["rule.py"],
     deps = [
         ":build_pb_py",
-        "//external:mistune",
+        "@mistune//:mistune",
     ],
 )
 
@@ -94,7 +94,7 @@ py_binary(
         ":macro_extractor",
         ":rule",
         ":rule_extractor",
-        "//external:jinja2",
+        "@jinja2//:jinja2",
         "@bazel_tools//tools/python/runfiles",
     ],
 )
