@@ -16,6 +16,10 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "StarlarkLibraryInfo")
 
+def _root_from_file(f):
+    """Given a file, returns the root path of that file."""
+    return f.root.path or "."
+
 def _stardoc_impl(ctx):
     """Implementation of the stardoc rule."""
     for semantic_flag in ctx.attr.semantic_flags:
@@ -26,19 +30,37 @@ def _stardoc_impl(ctx):
         dep[StarlarkLibraryInfo].transitive_srcs
         for dep in ctx.attr.deps
     ])
-    args = [
-        "--input=" + str(ctx.file.input.owner),
-        "--output=" + ctx.outputs.out.path,
-    ] + [
-        ("--symbols=" + symbol)
-        for symbol in ctx.attr.symbol_names
-    ] + ctx.attr.semantic_flags
+    args = ctx.actions.args()
+    args.add("--input=" + str(ctx.file.input.owner))
+    args.add("--output=" + ctx.outputs.out.path)
+    args.add("--workspace_name=" + ctx.workspace_name)
+    args.add_all(
+        ctx.attr.symbol_names,
+        format_each = "--symbols=%s",
+        omit_if_empty = True,
+    )
+
+    # TODO(cparsons): Note that use of dep_roots alone does not guarantee
+    # the correct file is loaded. If two files exist under the same path
+    # but are under different roots, it is possible that Stardoc loads the
+    # one that is not explicitly an input to this action (if sandboxing is
+    # disabled). The correct way to resolve this is to explicitly specify
+    # the full set of transitive dependency Starlark files as action args
+    # (maybe using a param file), but this requires some work.
+    args.add_all(
+        input_files,
+        format_each = "--dep_roots=%s",
+        map_each = _root_from_file,
+        omit_if_empty = True,
+        uniquify = True,
+    )
+    args.add_all(ctx.attr.semantic_flags)
     stardoc = ctx.executable.stardoc
     ctx.actions.run(
         outputs = [out_file],
         inputs = input_files,
         executable = stardoc,
-        arguments = args,
+        arguments = [args],
         mnemonic = "Stardoc",
         progress_message = ("Generating Starlark doc for %s" %
                             (ctx.label.name)),
@@ -86,10 +108,7 @@ non-default semantic flags required to use the given Starlark symbols.
         "stardoc": attr.label(
             doc = "The location of the stardoc tool.",
             allow_files = True,
-            # TODO (zhongming): Fix the build of @io_bazel to re-enable the use
-            # of Label.
-            #default = Label("@io_bazel//src/main/java/com/google/devtools/build/skydoc"),
-            default = "@com_logiocean_bazel_cli//:skydoc_wrapper.sh",
+            default = Label("//stardoc:stardoc"),
             cfg = "host",
             executable = True,
         ),

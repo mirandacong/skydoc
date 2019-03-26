@@ -1,3 +1,19 @@
+# Copyright 2019 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Repository external dependency resolution functions."""
+
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -47,10 +63,10 @@ py_library(
 def skydoc_repositories():
     """Adds the external repositories used by the skylark rules."""
     _include_if_not_defined(
-        git_repository,
+        http_archive,
         name = "bazel_skylib",
-        remote = "https://github.com/bazelbuild/bazel-skylib.git",
-        tag = "0.6.0",
+        urls = ["https://github.com/bazelbuild/bazel-skylib/releases/download/0.8.0/bazel-skylib.0.8.0.tar.gz"],
+        sha256 = "2ef429f5d7ce7111263289644d233707dba35e39696377ebab8b0bc701f7818e",
     )
     _include_if_not_defined(
         git_repository,
@@ -58,24 +74,6 @@ def skydoc_repositories():
         remote = "https://github.com/bazelbuild/rules_sass.git",
         commit = "8ccf4f1c351928b55d5dddf3672e3667f6978d60",
     )
-    _include_if_not_defined(
-        git_repository,
-        name = "io_bazel",
-        remote = "https://github.com/bazelbuild/bazel.git",
-        # TODO: Update to a newer tagged version when available.
-        commit = "e7ebb7e68d35ae090d91fe6b4c92c1c831421faa",  # 2018-11-26
-    )
-    _include_if_not_defined(
-        git_repository,
-        name = "com_google_protobuf",
-        remote = "https://github.com/protocolbuffers/protobuf.git",
-        # Latest tagged version at time of writing is v3.6.1, which doesn't
-        # include fixes for --incompatible_package_name_is_a_function,
-        # --incompatible_new_actions_api, and possibly others.
-        # TODO: Update to a newer tagged version when available.
-        commit = "7b28271a61a3da0a37f6fda399b0c4c86464e5b3",  # 2018-11-16
-    )
-
     _include_if_not_defined(
         http_archive,
         name = "markupsafe_archive",

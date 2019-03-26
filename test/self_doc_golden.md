@@ -1,4 +1,7 @@
+<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+
 <a name="#stardoc"></a>
+
 ## stardoc
 
 <pre>
@@ -93,6 +96,8 @@ documentation for all exported rule definitions will be generated.
 </table>
 
 
+<a name="#_stardoc_impl"></a>
+
 ## _stardoc_impl
 
 <pre>
@@ -109,7 +114,7 @@ Implementation of the stardoc rule.
     <col class="col-description" />
   </colgroup>
   <tbody>
-    <tr id="_stardoc_impl-ctx>
+    <tr id="_stardoc_impl-ctx">
       <td><code>ctx</code></td>
       <td>
         required.
